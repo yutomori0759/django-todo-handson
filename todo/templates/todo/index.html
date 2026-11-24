@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TODOアプリ</title>
+  <style>
+    body { font-family: sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; color: #222; }
+    h1 { font-size: 24px; }
+    .meta { font-size: 12px; color: #666; background: #f4f4f4; padding: 8px 12px; border-radius: 6px; }
+    form.add { display: flex; gap: 8px; margin: 20px 0; }
+    form.add input[type=text] { flex: 1; padding: 8px; font-size: 16px; }
+    button { padding: 6px 12px; cursor: pointer; }
+    ul { list-style: none; padding: 0; }
+    li { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid #eee; }
+    li .title { flex: 1; }
+    li.done .title { text-decoration: line-through; color: #999; }
+    li form { margin: 0; }
+  </style>
+</head>
+<body>
+  <h1>TODOアプリ</h1>
+  <p class="meta">バージョン: {{ version }} ／ 接続先DB: {{ db_host }}</p>
+
+  <form class="add" method="post">
+    {% csrf_token %}
+    <input type="text" name="title" placeholder="やることを入力" required>
+    <button type="submit">追加</button>
+  </form>
+
+  <ul>
+    {% for todo in todos %}
+    <li class="{% if todo.done %}done{% endif %}">
+      <form method="post" action="{% url 'toggle' todo.pk %}">{% csrf_token %}<button>{% if todo.done %}↩{% else %}✔{% endif %}</button></form>
+      <span class="title">{{ todo.title }}</span>
+      <form method="post" action="{% url 'delete' todo.pk %}">{% csrf_token %}<button>削除</button></form>
+    </li>
+    {% empty %}
+    <li>TODOはまだありません</li>
+    {% endfor %}
+  </ul>
+</body>
+</html>
