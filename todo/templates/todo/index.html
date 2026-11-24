@@ -16,6 +16,8 @@
     li .title { flex: 1; }
     li.done .title { text-decoration: line-through; color: #999; }
     li form { margin: 0; }
+    .badge { font-size: 12px; padding: 2px 8px; border-radius: 10px; color: #fff; }
+    .p1 { background: #d9534f; } .p2 { background: #f0ad4e; } .p3 { background: #5bc0de; }
   </style>
 </head>
 <body>
@@ -25,6 +27,11 @@
   <form class="add" method="post">
     {% csrf_token %}
     <input type="text" name="title" placeholder="やることを入力" required>
+    <select name="priority">
+      <option value="1">高</option>
+      <option value="2" selected>中</option>
+      <option value="3">低</option>
+    </select>
     <button type="submit">追加</button>
   </form>
 
@@ -32,6 +39,7 @@
     {% for todo in todos %}
     <li class="{% if todo.done %}done{% endif %}">
       <form method="post" action="{% url 'toggle' todo.pk %}">{% csrf_token %}<button>{% if todo.done %}↩{% else %}✔{% endif %}</button></form>
+      <span class="badge p{{ todo.priority }}">{{ todo.get_priority_display }}</span>
       <span class="title">{{ todo.title }}</span>
       <form method="post" action="{% url 'delete' todo.pk %}">{% csrf_token %}<button>削除</button></form>
     </li>

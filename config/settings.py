@@ -9,7 +9,7 @@ pymysql.install_as_MySQLdb()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-APP_VERSION = "v1"
+APP_VERSION = "v2"
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "handson-insecure-secret-key")
 # ハンズオンではエラー内容を画面で見るため True。本番では必ず False にする

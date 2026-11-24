@@ -10,7 +10,7 @@ def index(request):
     if request.method == "POST":
         title = request.POST.get("title", "").strip()
         if title:
-            Todo.objects.create(title=title)
+            Todo.objects.create(title=title, priority=int(request.POST.get("priority", 2)))
         return redirect("index")
     return render(request, "todo/index.html", {
         "todos": Todo.objects.all(),
