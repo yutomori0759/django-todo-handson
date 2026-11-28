@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: >-
-  ハンズオン用 Webアプリケーション基盤
+  Hands-on web application infrastructure
   (VPC / NAT Gateway / ALB / EC2 / RDS for MySQL)
 
 Parameters:
@@ -10,15 +10,15 @@ Parameters:
     MinLength: 8
     MaxLength: 41
     AllowedPattern: "[a-zA-Z0-9]+"
-    Description: RDSのパスワード（英数字8文字以上）。あとで .env に書くので控えておく
+    Description: RDS master password (8+ alphanumeric characters). Note it down - you will write it in .env later
   LatestAmiId:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
-    Description: EC2のAMI（Amazon Linux 2023 の最新版。変更不要）
+    Description: AMI for EC2 (latest Amazon Linux 2023). No need to change
 
 Resources:
   # ---------------------------------------------------------------
-  # ネットワーク
+  # Network
   # ---------------------------------------------------------------
   VPC:
     Type: AWS::EC2::VPC
@@ -63,7 +63,7 @@ Resources:
         - Key: Name
           Value: handson-public-1c
 
-  # アプリ用（EC2）: NAT Gateway 経由で外に出られる
+  # App subnets (EC2): outbound internet access via NAT Gateway
   AppSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -84,7 +84,7 @@ Resources:
         - Key: Name
           Value: handson-app-1c
 
-  # DB用（RDS）: インターネットへのルートを持たない
+  # DB subnets (RDS): no route to the internet
   DbSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -178,7 +178,7 @@ Resources:
       SubnetId: !Ref AppSubnet2
       RouteTableId: !Ref AppRouteTable
 
-  # VPC内（local）のルートだけ。0.0.0.0/0 のルートは作らない
+  # Local (in-VPC) route only. No 0.0.0.0/0 route
   DbRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -200,7 +200,7 @@ Resources:
       RouteTableId: !Ref DbRouteTable
 
   # ---------------------------------------------------------------
-  # セキュリティグループ
+  # Security groups
   # ---------------------------------------------------------------
   AlbSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -248,7 +248,7 @@ Resources:
           Value: handson-db-sg
 
   # ---------------------------------------------------------------
-  # EC2（Session Manager で接続する）
+  # EC2 (connect with Session Manager)
   # ---------------------------------------------------------------
   Ec2Role:
     Type: AWS::IAM::Role
@@ -361,11 +361,11 @@ Resources:
 
 Outputs:
   AppUrl:
-    Description: ブラウザでアクセスするURL
+    Description: URL to open in your browser
     Value: !Sub http://${LoadBalancer.DNSName}
   DBHost:
-    Description: .env の DB_HOST に書く値（RDSのエンドポイント）
+    Description: Value for DB_HOST in .env (RDS endpoint)
     Value: !GetAtt Database.Endpoint.Address
   InstanceId:
-    Description: Session Manager で接続するEC2
+    Description: EC2 instance to connect with Session Manager
     Value: !Ref AppInstance
