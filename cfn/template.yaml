@@ -63,7 +63,8 @@ Resources:
         - Key: Name
           Value: handson-public-1c
 
-  PrivateSubnet1:
+  # アプリ用（EC2）: NAT Gateway 経由で外に出られる
+  AppSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
@@ -71,9 +72,9 @@ Resources:
       AvailabilityZone: !Select [0, !GetAZs ""]
       Tags:
         - Key: Name
-          Value: handson-private-1a
+          Value: handson-app-1a
 
-  PrivateSubnet2:
+  AppSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
@@ -81,7 +82,28 @@ Resources:
       AvailabilityZone: !Select [1, !GetAZs ""]
       Tags:
         - Key: Name
-          Value: handson-private-1c
+          Value: handson-app-1c
+
+  # DB用（RDS）: インターネットへのルートを持たない
+  DbSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.20.0/24
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      Tags:
+        - Key: Name
+          Value: handson-db-1a
+
+  DbSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.21.0/24
+      AvailabilityZone: !Select [1, !GetAZs ""]
+      Tags:
+        - Key: Name
+          Value: handson-db-1c
 
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
@@ -129,32 +151,53 @@ Resources:
         - Key: Name
           Value: handson-nat
 
-  PrivateRouteTable:
+  AppRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: handson-private-rt
+          Value: handson-app-rt
 
-  PrivateRoute:
+  AppRoute:
     Type: AWS::EC2::Route
     Properties:
-      RouteTableId: !Ref PrivateRouteTable
+      RouteTableId: !Ref AppRouteTable
       DestinationCidrBlock: 0.0.0.0/0
       NatGatewayId: !Ref NatGateway
 
-  PrivateSubnet1RouteTableAssociation:
+  AppSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId: !Ref PrivateSubnet1
-      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref AppSubnet1
+      RouteTableId: !Ref AppRouteTable
 
-  PrivateSubnet2RouteTableAssociation:
+  AppSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      SubnetId: !Ref PrivateSubnet2
-      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref AppSubnet2
+      RouteTableId: !Ref AppRouteTable
+
+  # VPC内（local）のルートだけ。0.0.0.0/0 のルートは作らない
+  DbRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: handson-db-rt
+
+  DbSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref DbSubnet1
+      RouteTableId: !Ref DbRouteTable
+
+  DbSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref DbSubnet2
+      RouteTableId: !Ref DbRouteTable
 
   # ---------------------------------------------------------------
   # セキュリティグループ
@@ -228,11 +271,11 @@ Resources:
 
   AppInstance:
     Type: AWS::EC2::Instance
-    DependsOn: PrivateRoute
+    DependsOn: AppRoute
     Properties:
       ImageId: !Ref LatestAmiId
       InstanceType: t3.micro
-      SubnetId: !Ref PrivateSubnet1
+      SubnetId: !Ref AppSubnet1
       SecurityGroupIds:
         - !Ref AppSecurityGroup
       IamInstanceProfile: !Ref Ec2InstanceProfile
@@ -288,10 +331,10 @@ Resources:
   DBSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
-      DBSubnetGroupDescription: handson private subnets
+      DBSubnetGroupDescription: handson db subnets (no internet route)
       SubnetIds:
-        - !Ref PrivateSubnet1
-        - !Ref PrivateSubnet2
+        - !Ref DbSubnet1
+        - !Ref DbSubnet2
 
   Database:
     Type: AWS::RDS::DBInstance
