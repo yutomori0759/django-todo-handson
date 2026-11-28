@@ -12,10 +12,19 @@
 
 ## メモ欄（作業中に埋めていく）
 
+`.env` に書く4行。`（ ）` はかっこごと値に置き換える（STEP 6 でこのまま貼り付けます）：
+
 ```
-DBPassword : 
+DB_HOST=（出力タブの DBHost の値）
+DB_NAME=todo
+DB_USER=admin
+DB_PASSWORD=（スタック作成時に入力したパスワード）
+```
+
+その他：
+
+```
 AppUrl     : 
-DBHost     : 
 InstanceId : 
 ```
 
@@ -27,12 +36,12 @@ InstanceId :
 
 ```
 スタック名 : handson-webapp
-DBPassword : 英数字8文字以上（メモ欄に控える）
+DBPassword : 英数字8文字以上（メモ欄の DB_PASSWORD に書く）
 ```
 
 ## STEP 2. 出力タブの値を控える（コンソール操作）
 
-`AppUrl` / `DBHost` / `InstanceId` をメモ欄に控える。
+`DBHost` はメモ欄の `DB_HOST` に、`AppUrl` / `InstanceId` は「その他」に控える。
 
 ## STEP 3. Session Manager で EC2 に接続する（コンソール操作）
 
@@ -70,14 +79,7 @@ ls
 vim .env
 ```
 
-書き込む内容（`（ ）` はかっこごとメモ欄の値に置き換える）：
-
-```
-DB_HOST=（DBHost の値）
-DB_NAME=todo
-DB_USER=admin
-DB_PASSWORD=（DBPassword の値）
-```
+メモ欄の4行（`DB_HOST=` 〜 `DB_PASSWORD=`）をそのまま貼り付ける。
 
 vim の操作：`i` → 貼り付け → `Esc` → `:wq` + Enter（保存せずにやめるときは `:q!`）
 
@@ -243,6 +245,7 @@ vim .env
 | `permission denied ... docker.sock` | `sudo` の付け忘れ |
 | `The container name "/todo" is already in use` | 同じ名前のコンテナが残っている → 上の「作り直す」を実行 |
 | `Name or service not known` | `.env` の `DB_HOST` が間違っている |
+| エラーに `sqlite3` が出る／画面に「接続先DB: SQLite」 | `.env` が渡っていない（`--env-file .env` の付け忘れ、`.env` の項目名の間違い）→ `cat .env` で4行の名前を確認して作り直す |
 | `(timed out)` | 通信が届いていない（セキュリティグループ） |
 | `Access denied for user` | `.env` のユーザー名かパスワードが違う |
 | ブラウザで 502 Bad Gateway | コンテナが動いていない、または `-p 80:8000` の指定ミス |
