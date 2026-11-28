@@ -13,6 +13,17 @@ AWS ハンズオン「Webアプリケーションをデプロイしてみよう�
 | `main` | v1: TODO の追加・完了・削除 |
 | `v2` | v2: 優先度（priority）の列を追加。マイグレーション `0002_add_priority` を含む |
 
+## 起動方法（自分のPC）
+
+DB は SQLite（コンテナの中のファイル）になります。コンテナを消すとデータも消えます。
+
+```
+docker build -t todo-app .
+docker run -d --name todo-local -p 3000:8000 todo-app
+docker exec todo-local python manage.py migrate
+# → http://localhost:3000
+```
+
 ## 起動方法（EC2 上）
 
 ```
