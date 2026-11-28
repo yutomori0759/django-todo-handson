@@ -1,6 +1,8 @@
-# django-todo-handson
+# aws-webapp-deploy-ec2-rds
 
-AWS ハンズオン「Webアプリケーションをデプロイしてみよう」用の TODO アプリです。
+AWS ハンズオン「Webアプリケーションをデプロイしてみよう【EC2 × Docker × RDS】」用の TODO アプリです。
+
+**受講者の方は [HANDSON.md（ハンズオン手順書）](HANDSON.md) を開いてください。**
 
 - Django 5.2 / Python 3.12 / Docker
 - DB: RDS for MySQL 8.4（`DB_HOST` を指定しない場合は SQLite）
